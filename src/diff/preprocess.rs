@@ -30,7 +30,16 @@ pub fn preprocess_diff(raw_diff: &str, max_lines: usize) -> String {
         }
 
         // Skip metadata lines
-        if line.starts_with("index ") || line.starts_with("old mode") || line.starts_with("new mode") {
+        if line.starts_with("index ")
+            || line.starts_with("old mode")
+            || line.starts_with("new mode")
+            || line.starts_with("new file mode")
+            || line.starts_with("deleted file mode")
+            || line.starts_with("similarity index")
+            || line.starts_with("rename from")
+            || line.starts_with("rename to")
+            || line.starts_with("Binary files")
+        {
             continue;
         }
 

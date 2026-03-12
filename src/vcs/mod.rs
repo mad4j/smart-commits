@@ -21,7 +21,7 @@ pub fn detect_vcs(override_vcs: Option<&str>) -> Result<Box<dyn Vcs>> {
 
     let cwd = std::env::current_dir()?;
 
-    if Path::new(".git").exists() || find_git_root(&cwd) {
+    if Path::new(".git").is_dir() || find_git_root(&cwd) {
         return Ok(Box::new(git::GitVcs::new()));
     }
 
@@ -35,7 +35,7 @@ pub fn detect_vcs(override_vcs: Option<&str>) -> Result<Box<dyn Vcs>> {
 fn find_git_root(start: &Path) -> bool {
     let mut current = start.to_path_buf();
     loop {
-        if current.join(".git").exists() {
+        if current.join(".git").is_dir() {
             return true;
         }
         if !current.pop() {

@@ -26,10 +26,6 @@ async fn main() -> Result<()> {
     // Get diff
     let raw_diff = vcs.get_diff().context("Failed to get diff")?;
 
-    if raw_diff.trim().is_empty() {
-        anyhow::bail!("No changes found to commit.");
-    }
-
     // Preprocess diff
     let preprocessed = diff::preprocess_diff(&raw_diff, config.max_diff_lines);
 
