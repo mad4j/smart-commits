@@ -76,7 +76,6 @@ pub async fn generate_streaming(endpoint: &str, model: &str, prompt: &str) -> Re
                 }
                 Err(_) => {
                     // Skip malformed lines (e.g. keep-alive or unexpected chunks)
-                    eprintln!("[debug] Skipping malformed stream line: {}", line);
                 }
             }
         }

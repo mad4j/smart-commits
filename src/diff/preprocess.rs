@@ -7,7 +7,7 @@ pub struct FileChanges {
 
 pub fn preprocess_diff(raw_diff: &str, max_lines: usize) -> String {
     let mut file_groups: Vec<FileChanges> = Vec::new();
-    let mut current_file: Option<FileChanges> = None;
+    let mut current_changes: Option<FileChanges> = None;
     let mut total_lines = 0;
 
     for line in raw_diff.lines() {
@@ -16,12 +16,12 @@ pub fn preprocess_diff(raw_diff: &str, max_lines: usize) -> String {
         }
 
         if line.starts_with("diff --git ") || line.starts_with("diff -r ") {
-            if let Some(fc) = current_file.take() {
+            if let Some(fc) = current_changes.take() {
                 file_groups.push(fc);
             }
             // Extract filename from diff header
             let filename = extract_filename_from_diff(line);
-            current_file = Some(FileChanges {
+            current_changes = Some(FileChanges {
                 filename,
                 added: Vec::new(),
                 removed: Vec::new(),
@@ -48,7 +48,7 @@ pub fn preprocess_diff(raw_diff: &str, max_lines: usize) -> String {
             let path = &line[4..];
             if path != "/dev/null" && !path.starts_with("a/") && !path.starts_with("b/") {
                 // SVN-style diff, update filename
-                if let Some(ref mut fc) = current_file {
+                if let Some(ref mut fc) = current_changes {
                     if fc.filename.is_empty() {
                         fc.filename = path.trim().to_string();
                     }
@@ -56,7 +56,7 @@ pub fn preprocess_diff(raw_diff: &str, max_lines: usize) -> String {
             } else if path.starts_with("b/") {
                 // git-style +++ b/filename
                 if line.starts_with("+++ ") {
-                    if let Some(ref mut fc) = current_file {
+                    if let Some(ref mut fc) = current_changes {
                         if fc.filename.is_empty() {
                             fc.filename = path[2..].trim().to_string();
                         }
@@ -73,19 +73,19 @@ pub fn preprocess_diff(raw_diff: &str, max_lines: usize) -> String {
 
         // Handle added/removed lines
         if line.starts_with('+') && !line.starts_with("+++") {
-            if let Some(ref mut fc) = current_file {
+            if let Some(ref mut fc) = current_changes {
                 fc.added.push(line[1..].to_string());
                 total_lines += 1;
             }
         } else if line.starts_with('-') && !line.starts_with("---") {
-            if let Some(ref mut fc) = current_file {
+            if let Some(ref mut fc) = current_changes {
                 fc.removed.push(line[1..].to_string());
                 total_lines += 1;
             }
         }
     }
 
-    if let Some(fc) = current_file {
+    if let Some(fc) = current_changes {
         file_groups.push(fc);
     }
 
